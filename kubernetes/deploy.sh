@@ -36,7 +36,15 @@ PORT_FORWARD_PID=$!
 
 echo "🌐 Opening Neo4j Browser automatically..."
 sleep 3
-open http://localhost:7474
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    xdg-open http://localhost:7474
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    open http://localhost:7474
+elif [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]]; then
+    start http://localhost:7474
+else
+    echo "Please open http://localhost:7474 manually in your browser."
+fi
 
 echo "👉 Note: Port forwarding is running in the background (PID $PORT_FORWARD_PID)."
 echo "When you want to stop it, run: kill $PORT_FORWARD_PID"

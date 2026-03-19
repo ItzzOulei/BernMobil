@@ -10,9 +10,17 @@ This project contains the configuration for running a highly available Neo4j 5 E
 ## 1. Deploy the Cluster
 
 Navigate to the `kubernetes/` directory and run the deployment script:
+
+**Mac/Linux:**
 ```bash
 cd kubernetes
 ./deploy.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+cd kubernetes
+.\deploy.ps1
 ```
 
 This will:
@@ -30,9 +38,16 @@ kubectl get pods -n bernmobil -w
 
 If you have a `.dump` file located in the `/dump` directory at the project root, you can load it into your newly created Kubernetes cluster by running the init script:
 
+**Mac/Linux:**
 ```bash
 cd kubernetes
 ./init.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+cd kubernetes
+.\init.ps1
 ```
 
 **Note:** This script will safely scale down the cluster, transfer your local dump file into the Kubernetes PersistentVolume via a temporary bridge pod, extract it using `neo4j-admin`, and scale your cluster back up!
