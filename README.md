@@ -23,7 +23,7 @@ This will:
 
 You can monitor it spinning up visually:
 ```bash
-kubectl get pods -w
+kubectl get pods -n bernmobil -w
 ```
 
 ## 2. Load the Initial Database Dump
@@ -50,7 +50,8 @@ Once the database has started (and your dump is loaded), it will be configured w
 
 To uninstall the cluster:
 ```bash
-helm uninstall my-neo4j
-kubectl delete -f kubernetes/hpa.yaml
-kubectl delete -f kubernetes/neo4j-secret.yaml
+helm uninstall my-neo4j -n bernmobil
+kubectl delete -f kubernetes/hpa.yaml -n bernmobil
+kubectl delete -f kubernetes/neo4j-secret.yaml -n bernmobil
+kubectl delete namespace bernmobil
 ```

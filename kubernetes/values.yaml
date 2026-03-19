@@ -4,11 +4,7 @@ neo4j:
   edition: "enterprise"
   acceptLicenseAgreement: "yes"
 
-  password:
-    secretReference:
-      name: neo4j-auth
-      key: NEO4J_AUTH
-
+  password: "bernmobil123"
 core:
   standalone: false
   numberOfServers: 3
@@ -20,20 +16,16 @@ readReplica:
 volumes:
   data:
     mode: dynamic
-    # Default is 10Gi, we can keep it default for now
+    dynamic:
+      storageClassName: "standard"
+      requests:
+        storage: 2Gi
   
 config:
   # Additional configurations from docker-compose.yaml
   server.config.strict_validation.enabled: "false"
-  server.cluster.network.shared_secret: "${NEO4J_server_cluster_network_shared__secret}"
 
-env:
-  # We pass the shared secret dynamically via environment variable to the config
-  - name: NEO4J_server_cluster_network_shared__secret
-    valueFrom:
-      secretKeyRef:
-        name: neo4j-auth
-        key: NEO4J_server_cluster_network_shared__secret
+
 
 jvm:
   heapSize: "512m"
