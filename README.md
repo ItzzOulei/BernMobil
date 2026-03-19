@@ -1,74 +1,45 @@
-# Neo4j Cluster
+# Neo4j Cluster (Kubernetes)
 
-This project contains configurations for running a highly available Neo4j 5 Enterprise cluster. You can run the cluster either using **Docker Compose** (for local development/testing) or **Kubernetes** (for automatic scaling based on read traffic).
+This project contains the configuration for running a highly available Neo4j 5 Enterprise cluster specifically on **Kubernetes** utilizing the official Neo4j Helm charts. It automatically scales Read Replicas based on traffic and comes with a script to populate your database with an initial dump.
 
-## Method 1: Docker Compose (Local & Static)
+## Prerequisites
+- A running Kubernetes cluster (Docker Desktop, Minikube, EKS, etc.)
+- `kubectl` configured
+- `helm` installed (v3+)
 
-The `docker-compose.yaml` file defines a static 3-node core cluster. This is ideal for local development where you don't need automatic scaling.
+## 1. Deploy the Cluster
 
-### Prerequisites
-- Docker & Docker Compose installed
-
-### Running the Cluster
-1. Navigate to the project root:
-   ```bash
-   cd neo4j-cluster
-   ```
-2. Start the cluster:
-   ```bash
-   docker-compose up -d
-   ```
-3. Access the Neo4j Browser:
-   - Core 1: http://localhost:7474
-   - Core 2: http://localhost:7475
-   - Core 3: http://localhost:7476
-   - **Credentials:** Username: `neo4j`, Password: `bernmobil123`
-
-To shut down the cluster:
+Navigate to the `kubernetes/` directory and run the deployment script:
 ```bash
-docker-compose down
+cd kubernetes
+./deploy.sh
 ```
 
----
+This will:
+1. Register the Neo4j Helm repository.
+2. Apply the necessary Kubernetes Secrets for authentication.
+3. Install the Neo4j Cluster (3 Core Nodes and 1 Read Replica initially).
+4. Apply the Horizontal Pod Autoscaler (HPA) to auto-scale Read Replicas based on CPU.
 
-## Method 2: Kubernetes (Auto-Scaling "Magic")
-
-The `kubernetes/` directory contains manifests to deploy the Neo4j cluster onto Kubernetes. This setup uses the official Neo4j Helm chart and includes a **Horizontal Pod Autoscaler (HPA)** that will automatically spin up Read Replicas as your traffic increases.
-
-### Prerequisites
-- A running Kubernetes cluster (e.g., Docker Desktop Kubernetes, Minikube, or a cloud provider)
-- `kubectl` installed and configured to point to your cluster
-- `helm` installed (version 3+)
-
-### Running the Cluster
-1. Navigate to the kubernetes directory:
-   ```bash
-   cd kubernetes
-   ```
-2. Run the deployment script:
-   ```bash
-   ./deploy.sh
-   ```
-   *This script adds the Neo4j Helm repo, applies the Cluster Secrets, installs the Helm chart, and sets up the HPA.*
-
-3. Monitor the scaling:
-   ```bash
-   kubectl get pods -w
-   ```
-   You will initially see the 3 Core pods spinning up, plus 1 Read Replica pod. As the CPU utilization on the Read Replica exceeds 70%, the cluster will automatically spawn more Read Replicas (up to 10) to handle the load!
-
-To uninstall from Kubernetes:
+You can monitor it spinning up visually:
 ```bash
-helm uninstall my-neo4j
-kubectl delete -f hpa.yaml
-kubectl delete -f neo4j-secret.yaml
+kubectl get pods -w
 ```
 
----
+## 2. Load the Initial Database Dump
 
-## Users and Access Control
+If you have a `.dump` file located in the `/dump` directory at the project root, you can load it into your newly created Kubernetes cluster by running the init script:
 
-The database has been pre-configured with following users (`password: b3rnm0bil`):
+```bash
+cd kubernetes
+./init.sh
+```
+
+**Note:** This script will safely scale down the cluster, transfer your local dump file into the Kubernetes PersistentVolume via a temporary bridge pod, extract it using `neo4j-admin`, and scale your cluster back up!
+
+## 3. Users and Access Control
+
+Once the database has started (and your dump is loaded), it will be configured with following users (Default password: `b3rnm0bil`):
 
 | Benutzer | Rolle | Berechtigung |
 |----------|-------|-------------|
@@ -76,3 +47,10 @@ The database has been pre-configured with following users (`password: b3rnm0bil`
 | `backup_admin` | `admin` | Voller Zugriff auf System und Daten. |
 | `app_user` | `reader` | Dieser User nutzt unsere WebApp. Er hat nur Leserechte. |
 | `netzplaner` | `editor` | Darf den Graphen lesen und modifizieren, jedoch keine Systemeinstellungen ändern. |
+
+To uninstall the cluster:
+```bash
+helm uninstall my-neo4j
+kubectl delete -f kubernetes/hpa.yaml
+kubectl delete -f kubernetes/neo4j-secret.yaml
+```
