@@ -1,8 +1,8 @@
 import neo4j from 'neo4j-driver'
 
-const NEO4J_URI = import.meta.env.VITE_NEO4J_URI
-const READ_USER = import.meta.env.VITE_NEO4J_READ_USER
-const READ_PASS = import.meta.env.VITE_NEO4J_READ_PASS
+const NEO4J_URI = import.meta.env.VITE_NEO4J_URI || 'bolt://localhost:17687'
+const READ_USER = import.meta.env.VITE_NEO4J_READ_USER || 'app_user'
+const READ_PASS = import.meta.env.VITE_NEO4J_READ_PASS || 'b3rnm0bil'
 
 let driver = null
 let authDriver = null
@@ -43,7 +43,7 @@ export function closeAll() {
 // ─── Helper: run query ───
 async function runQuery(cypher, params = {}, useAuth = false) {
   const d = useAuth && authDriver ? authDriver : getPublicDriver()
-  const session = d.session()
+  const session = d.session({ database: 'neo4j' })
   try {
     const result = await session.run(cypher, params)
     return result.records
@@ -55,7 +55,7 @@ async function runQuery(cypher, params = {}, useAuth = false) {
 // For write operations we always use transaction
 async function runWrite(cypher, params = {}) {
   if (!authDriver) throw new Error('Nicht angemeldet')
-  const session = authDriver.session()
+  const session = authDriver.session({ database: 'neo4j' })
   try {
     const result = await session.executeWrite(tx => tx.run(cypher, params))
     return result.records
