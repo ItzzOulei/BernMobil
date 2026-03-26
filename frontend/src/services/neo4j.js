@@ -1,8 +1,8 @@
 import neo4j from 'neo4j-driver'
 
-const NEO4J_URI = import.meta.env.VITE_NEO4J_URI || 'bolt://localhost:17687'
-const READ_USER = import.meta.env.VITE_NEO4J_READ_USER || 'app_user'
-const READ_PASS = import.meta.env.VITE_NEO4J_READ_PASS || 'b3rnm0bil'
+const NEO4J_URI = import.meta.env.VITE_NEO4J_URI || 'neo4j+s://REDACTED.databases.neo4j.io'
+const READ_USER = import.meta.env.VITE_NEO4J_READ_USER || 'REDACTED'
+const READ_PASS = import.meta.env.VITE_NEO4J_READ_PASS || 'REDACTED'
 
 let driver = null
 let authDriver = null
