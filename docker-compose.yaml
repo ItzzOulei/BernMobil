@@ -1,0 +1,31 @@
+# Neo4j + BernMobil Frontend
+
+services:
+  neo4j:
+    image: neo4j:5-community
+    container_name: neo4j
+    ports:
+      - "17474:7474"
+      - "17687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/bernmobil123
+      - NEO4J_server_memory_heap_initial__size=512m
+      - NEO4J_server_memory_heap_max__size=512m
+      - NEO4J_server_memory_pagecache_size=256m
+    volumes:
+      - neo4j_data:/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bernmobil-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - neo4j
+    environment:
+      - VITE_NEO4J_URI=bolt://neo4j:7687
+
+volumes:
+  neo4j_data:
